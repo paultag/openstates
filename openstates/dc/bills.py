@@ -1,6 +1,7 @@
 import datetime
 import lxml.html
 import xlrd
+import json
 
 import scrapelib
 
@@ -35,12 +36,28 @@ class DCBillScraper(BillScraper):
         page = self.get(CSV_URL)
         return xlrd.open_workbook(file_contents=page.content)
 
+    def get_legislation_public_data(self, bill_id):
+        endpoint = "http://lims.dccouncil.us/_layouts/15/uploader/AdminProxy.aspx/GetPublicData"
+        data = self.post(
+            endpoint,
+            headers={
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json, text/javascript, */*; q=0.01',
+                'Content-Type': 'application/json; charset=UTF-8'
+            },
+            data='{"legislationId": "PR21-0006"}'
+        )
+        return json.loads(data.json()['d'])
+
     def scrape_history(self, page):
         pass
 
     def scrape_bills(self, page):
-        for bill in icols(page):
-            print(bill['Download URL'])
+        map(self.scrape_bill, icols(page))
+
+    def scrape_bill(self, bill):
+        data = self.get_legislation_public_data(bill['Bill Number'])
+        print(json.dumps(data, sort_keys=True, indent=4))
 
     def scrape(self, session, chambers):
         index = self.download_bill_index()
