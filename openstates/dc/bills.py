@@ -36,6 +36,20 @@ class DCBillScraper(BillScraper):
         page = self.get(CSV_URL)
         return xlrd.open_workbook(file_contents=page.content)
 
+    def get_legislation_search_data(self, bill_id):
+        endpoint = "http://lims.dccouncil.us/_layouts/15/uploader/AdminProxy.aspx/GetPublicSearchData"
+        data = self.post(
+            endpoint,
+            headers={
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json, text/javascript, */*; q=0.01',
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Referer': 'http://lims.dccouncil.us/Legislation/%s' % (bill_id),
+            },
+            data='{}'
+        )
+        return json.loads(data.json()['d'])
+
     def get_legislation_public_data(self, bill_id):
         endpoint = "http://lims.dccouncil.us/_layouts/15/uploader/AdminProxy.aspx/GetPublicData"
         data = self.post(
@@ -45,7 +59,7 @@ class DCBillScraper(BillScraper):
                 'Accept': 'application/json, text/javascript, */*; q=0.01',
                 'Content-Type': 'application/json; charset=UTF-8'
             },
-            data='{"legislationId": "PR21-0006"}'
+            data='{"legislationId": "%s"}' % (bill_id)
         )
         return json.loads(data.json()['d'])
 
@@ -57,7 +71,9 @@ class DCBillScraper(BillScraper):
 
     def scrape_bill(self, bill):
         data = self.get_legislation_public_data(bill['Bill Number'])
-        print(json.dumps(data, sort_keys=True, indent=4))
+        print(json.dumps(data, indent=4, sort_keys=True))
+        data = self.get_legislation_search_data(bill['Bill Number'])
+        raise Exception
 
     def scrape(self, session, chambers):
         index = self.download_bill_index()
