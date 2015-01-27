@@ -21,8 +21,7 @@ class MNVoteScraper(VoteScraper):
         html = self.urlopen(votes_url)
         doc = lxml.html.fromstring(html)
         prefix = {'lower': 'H', 'upper': 'S'}[chamber]
-        xpath = '//a[contains(@href, "votesbynumber.asp?billnum=%s")]' % prefix
-        links = doc.xpath(xpath)
+        links = doc.xpath("//a[contains(@href, 'votesbynumber')]")
         for link in links:
             bill_id = link.text
             link_url = link.get('href')
@@ -43,8 +42,9 @@ class MNVoteScraper(VoteScraper):
             return
 
         doc = lxml.html.fromstring(html)
-        paragraphs = doc.xpath('//h1/following-sibling::p')
 
+        raise Exception
+        paragraphs = doc.xpath('//b')
         # first paragraph has motion and vote total
         top_par = paragraphs[0].text_content()
         lines = top_par.splitlines()
@@ -66,6 +66,7 @@ class MNVoteScraper(VoteScraper):
         # first table has YEAs
         for name in doc.xpath('//table[1]/tr/td/font/text()'):
             vote.yes(name.strip())
+            raise Exception
 
         # second table is nays
         for name in doc.xpath('//table[2]/tr/td/font/text()'):

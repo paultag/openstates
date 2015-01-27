@@ -111,7 +111,7 @@ metadata = dict(
             'type': "primary",
             'display_name': '2015-2016 Regular Session',
             '_scraped_name': '89th Legislature, 2015-2016',
-            #'votes_url': 'http://www.house.leg.state.mn.us/votes/getVotesls89.asp',
+            'votes_url': 'http://www.house.leg.state.mn.us/votes/getVotesls89.asp',
         },
 
 
